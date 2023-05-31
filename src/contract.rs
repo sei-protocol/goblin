@@ -63,6 +63,9 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response<Empty>, ContractError> {
     match msg {
+        ExecuteMsg::ProposeInstantiate { code_id, msg, label } => {
+            execute_propose_instantiate(deps, env, info, code_id, msg, label)
+        }
         ExecuteMsg::ProposeMigrate { contract_addr, new_code_id, msg } => {
             execute_propose_migrate(deps, env, info, contract_addr, new_code_id, msg)
         }
@@ -74,6 +77,31 @@ pub fn execute(
             execute_process_proposal(deps, env, info, proposal_id)
         }
     }
+}
+
+fn execute_propose_instantiate(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    code_id: u64,
+    msg: Binary,
+    label: String,
+) -> Result<Response<Empty>, ContractError> {
+    let title = format!("instantiate {}", code_id);
+    let wasm_msg = WasmMsg::Instantiate {
+        admin: Some(env.contract.address.to_string()),
+        code_id,
+        msg,
+        funds: info.funds.clone(),
+        label,
+    };
+    execute_propose(
+        deps,
+        env.clone(),
+        info.clone(),
+        title.clone(),
+        vec![CosmosMsg::Wasm(wasm_msg)],
+    )
 }
 
 fn execute_propose_migrate(

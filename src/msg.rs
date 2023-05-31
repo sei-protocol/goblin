@@ -11,6 +11,11 @@ pub struct InstantiateMsg {
 
 #[cw_serde]
 pub enum ExecuteMsg {
+    ProposeInstantiate {
+        code_id: u64,
+        msg: Binary,
+        label: String,
+    },
     ProposeMigrate {
         contract_addr: Addr,
         new_code_id: u64,
